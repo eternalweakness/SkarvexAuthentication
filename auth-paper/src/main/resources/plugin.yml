@@ -1,0 +1,9 @@
+name: auth-paper
+version: '${version}'
+
+main: org.skarvex.auth.paper.AuthPaper
+api-version: '1.20'
+load: POSTWORLD
+
+authors: [eternalweakness]
+website: team.skarvex.org

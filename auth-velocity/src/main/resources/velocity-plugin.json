@@ -1,0 +1,8 @@
+{
+  "id": "auth-velocity",
+  "name": "auth-velocity",
+  "version": "${version}",
+  "main": "org.skarvex.authVelocity.AuthVelocity"
+  ,"url": "team.skarvex.org"
+  ,"authors": ["eternalweakness"]
+}
