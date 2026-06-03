@@ -1,4 +1,4 @@
-package org.skarvex.auth.core.repository.user;
+package org.skarvex.auth.core.repository;
 
 import org.skarvex.auth.core.model.User;
 
@@ -10,4 +10,6 @@ public interface UserRepository {
     Optional<User> findById(UUID uuid);
 
     void save(User user);
+
+    boolean updatePassword(UUID uuid, String passwordHash);
 }
