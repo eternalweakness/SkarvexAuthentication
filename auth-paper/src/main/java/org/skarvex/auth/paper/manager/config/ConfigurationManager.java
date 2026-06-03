@@ -1,7 +1,9 @@
-package org.skarvex.auth.paper.manager;
+package org.skarvex.auth.paper.manager.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.skarvex.auth.paper.AuthPaper;
+
+import java.util.List;
 
 public class ConfigurationManager {
 
@@ -21,6 +23,10 @@ public class ConfigurationManager {
 
     public boolean getBoolean(String path) {
         return config.getBoolean(path);
+    }
+
+    public List<String> getList(String path) {
+        return config.getStringList(path);
     }
 
 }

@@ -1,5 +1,6 @@
 plugins {
     id("java-library")
+    id("com.gradleup.shadow") version "8.3.0"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
@@ -10,13 +11,19 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    implementation(project(":auth-core"))
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("")
 }
 
 tasks {
+
     runServer {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
@@ -31,4 +38,6 @@ tasks {
             expand(props)
         }
     }
+
+    build { dependsOn(shadowJar) }
 }

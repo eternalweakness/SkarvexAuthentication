@@ -1,0 +1,14 @@
+spawn:
+  world: world
+  location:
+    x: 8.413
+    y: 110.000
+    z: 8.371
+    yaw: -0.4
+    pitch: -6.4
+
+settings:
+  allowed-commands:
+    - "/reg"
+    - "/register"
+    - "/login"
