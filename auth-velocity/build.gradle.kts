@@ -1,6 +1,6 @@
-
 plugins {
     id("java-library")
+    id("com.gradleup.shadow") version "9.0.0"
     id("xyz.jpenilla.run-velocity") version "3.0.2"
 }
 
@@ -10,7 +10,12 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":auth-core"))
     compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
+    implementation("org.yaml:snakeyaml:2.2")
+    implementation("com.mysql:mysql-connector-j:9.3.0")
+    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("org.apache.commons:commons-text:1.13.0")
 }
 
 java {
@@ -18,15 +23,20 @@ java {
 }
 
 tasks {
-  runVelocity {
-    // Configure the Velocity version for our task.
-    // This is the only required configuration besides applying the plugin.
-    // Your plugin's jar (or shadowJar if present) will be used automatically.
-    velocityVersion("3.5.0-SNAPSHOT")
-  }
+    shadowJar {
+        archiveClassifier.set("")
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+
+    runVelocity {
+        velocityVersion("3.5.0-SNAPSHOT")
+    }
 
     processResources {
-        val props = mapOf("version" to version )
+        val props = mapOf("version" to version)
         filesMatching("velocity-plugin.json") {
             expand(props)
         }

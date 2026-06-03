@@ -1,7 +1,7 @@
 database:
-  url: "jdbc:mysql://mysql4.joinserver.xyz:3306/s488897_skarvex_db"
-  username: "u488897_013lCYhUxA"
-  password: "aF.wBQeO0T@Z1FrEuaw.ULk."
+  url: ""
+  username: "root"
+  password: "root"
 
 login:
   attempts: 5

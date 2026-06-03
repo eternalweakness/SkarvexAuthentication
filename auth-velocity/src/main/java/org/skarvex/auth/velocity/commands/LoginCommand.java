@@ -3,22 +3,21 @@ package org.skarvex.auth.velocity.commands;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.kyori.adventure.text.Component;
 import org.skarvex.auth.core.service.AuthService;
 import org.skarvex.auth.velocity.manager.ConfigurationManager;
 import org.skarvex.auth.velocity.utils.Messages;
 
 import java.util.UUID;
 
-public class RegisterCommand implements SimpleCommand {
+public class LoginCommand implements SimpleCommand {
 
     private final ProxyServer server;
     private final ConfigurationManager config;
     private final AuthService authService;
 
-    public RegisterCommand(ProxyServer server,
-                           ConfigurationManager config,
-                           AuthService authService) {
+    public LoginCommand(ProxyServer server,
+                        ConfigurationManager config,
+                        AuthService authService) {
         this.server = server;
         this.config = config;
         this.authService = authService;
@@ -34,17 +33,20 @@ public class RegisterCommand implements SimpleCommand {
 
         if (arguments.length != 1) {
             player.sendMessage(Messages.parse(config.getString
-                    ("messages.register.usage"))
+                    ("messages.login.usage"))
             );
-
             return;
         }
 
-        if (authService.isRegistered(uuid)) {
+        if (authService.isAuthenticated(uuid)) {
             player.sendMessage(Messages.parse(
-                    config.getString("messages.already-registered"))
+                    config.getString("messages.already-logged"))
             );
+            return;
+        }
 
+        if (!authService.isRegistered(uuid)) {
+            player.sendMessage(Messages.parse(config.getString("messages.not-registered")));
             return;
         }
 
@@ -57,17 +59,18 @@ public class RegisterCommand implements SimpleCommand {
             return;
         }
 
-        if (authService.register(uuid, player.getUsername(), password)) {
+        if (!authService.authenticate(uuid, password)) {
             player.sendMessage(Messages.parse(
-                    config.getString("messages.register.success"))
-            );
-
-            server.getServer("lobby").ifPresent(lobby ->
-                    player.createConnectionRequest(lobby).fireAndForget());
-
+                    config.getString("messages.wrong-credentials")
+            ));
             return;
-        };
+        }
 
+        player.sendMessage(Messages.parse(
+                config.getString("messages.login.success"))
+        );
 
+        server.getServer("lobby").ifPresent(lobby ->
+                player.createConnectionRequest(lobby).fireAndForget());
     }
 }

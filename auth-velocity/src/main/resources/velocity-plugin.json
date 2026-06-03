@@ -2,7 +2,7 @@
   "id": "auth-velocity",
   "name": "auth-velocity",
   "version": "${version}",
-  "main": "org.skarvex.authVelocity.AuthVelocity"
+  "main": "org.skarvex.auth.velocity.AuthVelocity"
   ,"url": "team.skarvex.org"
   ,"authors": ["eternalweakness"]
 }
