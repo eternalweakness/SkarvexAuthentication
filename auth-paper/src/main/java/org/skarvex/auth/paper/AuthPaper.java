@@ -1,4 +1,4 @@
-package org.skarvex.auth.paper;
+package org.skarvex.auth.core.auth.paper;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

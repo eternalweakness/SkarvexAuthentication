@@ -1,4 +1,4 @@
-package org.skarvex.auth.velocity;
+package org.skarvex.auth.core.auth.velocity;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;

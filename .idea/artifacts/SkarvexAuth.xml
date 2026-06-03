@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SkarvexAuth">
+    <output-path>$PROJECT_DIR$/out/artifacts/SkarvexAuth</output-path>
+    <root id="archive" name="SkarvexAuth.jar" />
+  </artifact>
+</component>
