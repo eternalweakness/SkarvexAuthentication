@@ -30,9 +30,9 @@ public class ResetPasswordCommand implements SimpleCommand {
 
         String[] arguments = invocation.arguments();
 
-        if (arguments.length < 1) {
+        if (arguments.length != 2) {
             player.sendMessage(Messages.parse(config.getString
-                    ("messages.resetpassword.usage"))
+                    ("messages.changepass.usage"))
             );
             return;
         }
@@ -50,7 +50,7 @@ public class ResetPasswordCommand implements SimpleCommand {
 
         if (!authService.isAuthenticated(uuid)) {
             player.sendMessage(Messages.parse(
-                    config.getString("messages.not-logged-in")
+                    config.getString("messages.not-logged")
             ));
             return;
         }
@@ -63,12 +63,12 @@ public class ResetPasswordCommand implements SimpleCommand {
         }
 
         if (authService.updatePassword(uuid, newPassword)) {
-            player.sendMessage(
-                    Messages.parse(
-                            config.getString("messages.resetpassword.success")
-                    ));
 
             authService.logout(uuid);
+
+            player.disconnect(Messages.parse(
+                    config.getString("messages.changepass.kick-screen"))
+            );
         }
     }
 }

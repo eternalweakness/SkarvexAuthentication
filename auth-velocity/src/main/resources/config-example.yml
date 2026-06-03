@@ -28,4 +28,4 @@ messages:
 
   changepass:
     usage: "<dark_purple><bold>AUTH</bold></dark_purple> <dark_gray><bold>:: </bold></dark_gray> <white>Change password - <dark_purple>/changepass [old password] [new password]</dark_purple>"
-    success: "<white>Your password has been changed successfully. Please rejoin the server and log in using your new password."
+    kick-screen: "<green>Your password has been changed successfully. \n\n<white>Please rejoin the server and log in using your new password."

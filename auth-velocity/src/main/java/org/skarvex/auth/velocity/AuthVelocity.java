@@ -145,12 +145,12 @@ public class AuthVelocity {
 
         Player player = event.getPlayer();
 
+        if (authService.isAuthenticated(player.getUniqueId())) {
+            return;
+        }
+
         proxy.getScheduler()
                 .buildTask(this, () -> {
-                    if (authService.isAuthenticated(player.getUniqueId())) {
-                        return;
-                    }
-
                     if (!authService.isRegistered(player.getUniqueId())) {
                         player.sendMessage(Messages.parse(
                                 config.getString("messages.register.usage"))
