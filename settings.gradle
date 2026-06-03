@@ -1,6 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'SkarvexAuth'
 
 include 'auth-core'
 include 'auth-velocity'
 include 'auth-paper'
-include 'auth-core'
