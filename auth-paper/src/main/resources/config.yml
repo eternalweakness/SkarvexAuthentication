@@ -12,3 +12,7 @@ settings:
     - "/reg"
     - "/register"
     - "/login"
+
+auth:
+  title: "<dark_purple><bold>AUTH</bold></dark_purple>"
+  subtitle: "<gray>Use <white>/login</white> <gray>or <white>/register</white>"

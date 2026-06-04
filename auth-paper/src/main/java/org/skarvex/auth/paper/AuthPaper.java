@@ -7,6 +7,7 @@ import org.skarvex.auth.paper.listener.SpawnListener;
 import org.skarvex.auth.paper.listener.chat.ChatListener;
 import org.skarvex.auth.paper.manager.config.ConfigurationManager;
 import org.skarvex.auth.paper.manager.spawn.SpawnManager;
+import org.skarvex.auth.paper.manager.title.TitleManager;
 import org.skarvex.auth.paper.service.VisibilityService;
 import org.skarvex.auth.paper.service.WorldService;
 
@@ -17,6 +18,7 @@ public final class AuthPaper extends JavaPlugin {
     private SessionService sessionService;
     private VisibilityService visibilityService;
     private WorldService worldService;
+    private TitleManager titleManager;
 
     @Override
     public void onEnable() {
@@ -25,7 +27,10 @@ public final class AuthPaper extends JavaPlugin {
 
         worldService.configureAll();
 
-        getServer().getPluginManager().registerEvents(new PlayerListener(spawnManager, sessionService, visibilityService, this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(spawnManager, sessionService,
+                visibilityService, this, titleManager),
+                this);
+
         getServer().getPluginManager().registerEvents(new SpawnListener(), this);
         getServer().getPluginManager().registerEvents(new ChatListener(sessionService, config), this);
 
@@ -43,6 +48,6 @@ public final class AuthPaper extends JavaPlugin {
         spawnManager = new SpawnManager(config);
         sessionService = new SessionService();
         visibilityService = new VisibilityService(this);
-
+        titleManager = new TitleManager(config);
     }
 }

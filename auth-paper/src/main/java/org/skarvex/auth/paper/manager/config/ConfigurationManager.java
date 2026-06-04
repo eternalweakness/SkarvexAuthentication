@@ -1,16 +1,27 @@
 package org.skarvex.auth.paper.manager.config;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.skarvex.auth.paper.AuthPaper;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ConfigurationManager {
 
     private final FileConfiguration config;
+    private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
     public ConfigurationManager(AuthPaper plugin) {
         this.config = plugin.getConfig();
+    }
+
+    public Component getMessage(String path) {
+        return Optional.ofNullable(
+                config.getString(path)
+        ).map(miniMessage::deserialize)
+                .orElseGet(Component::empty);
     }
 
     public double getDouble(String path) {
