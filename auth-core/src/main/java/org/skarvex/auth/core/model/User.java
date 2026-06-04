@@ -2,5 +2,9 @@ package org.skarvex.auth.core.model;
 
 import java.util.UUID;
 
-public record User(UUID id, String name, String passwordHash) {
+public record User(UUID id,
+                   String passwordHash,
+                   String registrationIp,
+                   String lastLoginIp,
+                   boolean autoLogin) {
 }

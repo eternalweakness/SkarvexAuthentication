@@ -31,30 +31,45 @@ public class AuthService {
         this.sessions = sessions;
     }
 
-    public boolean register(UUID uuid, String name, String password) {
+    public boolean register(UUID uuid, String password, String registrationIp, String loginIp, boolean rememberSession) {
         if (users.findById(uuid).isPresent()) {
             return false;
         }
 
         users.save(
-                new User(uuid, name, hasher.hash(password))
+                new User(uuid,
+                        hasher.hash(password),
+                        registrationIp,
+                        loginIp,
+                        rememberSession
+                )
         );
 
         sessions.login(uuid);
 
         return true;
     }
-    public boolean authenticate(UUID uuid, String password) {
+    public boolean authenticate(UUID uuid, String password, String incomingIp) {
         return users.findById(uuid)
                 .filter(user ->
                         hasher.verify(password, user.passwordHash())
         ).map(user -> {
             sessions.login(uuid);
+            resetAttempts(uuid);
+
+            users.setAutoLogin(uuid, true);
+            users.updateLastLoginIp(uuid, incomingIp);
             return true;
                 }).orElse(false);
     }
+
     public void logout(UUID uuid) {
         sessions.logout(uuid);
+    }
+
+    public void revokeSession(UUID uuid) {
+        sessions.logout(uuid);
+        users.setAutoLogin(uuid, false);
     }
 
     public boolean isRegistered(UUID uuid) {
@@ -114,12 +129,26 @@ public class AuthService {
             return 0;
         }
 
-        return Duration.between(
-                Instant.now(), blockedUntil
-        ).toMinutes();
+        return Math.max(
+                0, Duration.between(
+                        Instant.now(),
+                        blockedUntil
+                ).toSeconds()
+        );
     }
 
-    // Getters
+    public boolean tryAutoLogin(UUID uuid, String incomingIp) {
+        return users.findById(uuid).filter(User::autoLogin)
+                .filter(user -> {
+                    boolean trustedSession = incomingIp.equals(user.lastLoginIp());
+
+                    if (!trustedSession) users.setAutoLogin(uuid, false);
+                    return trustedSession;
+                }).map(user -> {
+                    sessions.login(uuid);
+                    return true;
+        }).orElse(false);
+    }
 
     public int getMaxAttempts() {
         return this.maxAttempts;
