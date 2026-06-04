@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
-import org.bukkit.event.world.WorldLoadEvent;
 
 public class SpawnListener implements Listener {
 
@@ -106,8 +105,4 @@ public class SpawnListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
-    public void onWorldLoad(WorldLoadEvent event) {
-
-    }
 }
