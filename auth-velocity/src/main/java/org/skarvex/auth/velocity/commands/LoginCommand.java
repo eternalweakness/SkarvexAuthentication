@@ -60,15 +60,30 @@ public class LoginCommand implements SimpleCommand {
         }
 
         if (!authService.authenticate(uuid, password)) {
+
+            authService.addAttempt(uuid);
+
+            if (authService.getAttempts(uuid) >= authService.getMaxAttempts()) {
+                authService.block(uuid);
+
+                player.disconnect(Messages.parse(
+                        config.getString("messages.login.kick-screen"))
+                );
+                return;
+            }
+
             player.sendMessage(Messages.parse(
                     config.getString("messages.wrong-credentials")
             ));
+
             return;
         }
 
         player.sendMessage(Messages.parse(
                 config.getString("messages.login.success"))
         );
+
+        authService.resetAttempts(uuid);
 
         server.getServer("lobby").ifPresent(lobby ->
                 player.createConnectionRequest(lobby).fireAndForget());

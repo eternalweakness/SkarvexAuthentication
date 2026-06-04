@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.UUID;
 
 public class AuthVelocity {
 
@@ -144,6 +145,21 @@ public class AuthVelocity {
     public void onJoin(PlayerChooseInitialServerEvent event) {
 
         Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+
+        if (authService.isBlocked(uuid)) {
+
+            long time = authService.getRemainingTime(uuid);
+            String remainingTime = time + " " + (time == 1 ? "minute" : "minutes");
+
+            event.getPlayer().disconnect(
+                    Messages.parse(config.getString("messages.login.kick-screen")
+                            .replace("<time>", remainingTime)
+                    )
+            );
+
+            return;
+        }
 
         if (authService.isAuthenticated(player.getUniqueId())) {
             return;
