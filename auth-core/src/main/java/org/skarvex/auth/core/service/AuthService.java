@@ -101,6 +101,7 @@ public class AuthService {
 
         if (Instant.now().isAfter(blockedUntil)) {
             blockedUsers.remove(uuid);
+            resetAttempts(uuid);
             return false;
         }
 
