@@ -66,8 +66,12 @@ public class LoginCommand implements SimpleCommand {
             if (authService.getAttempts(uuid) >= authService.getMaxAttempts()) {
                 authService.block(uuid);
 
+                long time = authService.getRemainingTime(uuid);
+                String remainingTime = time + " " + (time == 1 ? "minute" : "minutes");
+
                 player.disconnect(Messages.parse(
-                        config.getString("messages.login.kick-screen"))
+                        config.getString("messages.login.kick-screen")
+                                .replace("<time>", remainingTime))
                 );
                 return;
             }

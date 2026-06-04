@@ -55,6 +55,13 @@ public class ResetPasswordCommand implements SimpleCommand {
             return;
         }
 
+        if (newPassword.length() < 4) {
+            player.sendMessage(Messages.parse(
+                    config.getString("messages.insufficient-characters")
+            ));
+            return;
+        }
+
         if (!authService.comparePassword(uuid, password)) {
             player.sendMessage(Messages.parse(
                     config.getString("messages.wrong-credentials")
@@ -63,7 +70,6 @@ public class ResetPasswordCommand implements SimpleCommand {
         }
 
         if (authService.updatePassword(uuid, newPassword)) {
-
             authService.logout(uuid);
 
             player.disconnect(Messages.parse(
