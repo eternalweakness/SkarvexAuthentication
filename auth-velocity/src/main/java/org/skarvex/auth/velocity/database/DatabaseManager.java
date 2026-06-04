@@ -24,21 +24,12 @@ public class DatabaseManager {
         HikariConfig hikari = new HikariConfig();
 
         hikari.setJdbcUrl(config.getString("database.url"));
+        hikari.setDriverClassName("com.mysql.cj.jdbc.Driver");
         hikari.setUsername(config.getString("database.username"));
         hikari.setPassword(config.getString("database.password"));
 
         hikari.setMaximumPoolSize(10);
         hikari.setMinimumIdle(2);
-
-        logger.info("URL: {}", config.getString("database.url"));
-        logger.info("User: {}", config.getString("database.username"));
-
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            logger.info("MySQL driver loaded");
-        } catch (ClassNotFoundException e) {
-            logger.error("MySQL driver missing", e);
-        }
 
         this.dataSource = new HikariDataSource(hikari);
 
@@ -49,8 +40,10 @@ public class DatabaseManager {
             statement.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     uuid VARCHAR(36) PRIMARY KEY,
-                    name VARCHAR(16) NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL
+                    password_hash VARCHAR(255) NOT NULL,
+                    registration_ip VARCHAR(255) NOT NULL,
+                    last_login_ip VARCHAR(255) NOT NULL,
+                    auto_login BOOLEAN NOT NULL DEFAULT TRUE
                 )
             """);
 

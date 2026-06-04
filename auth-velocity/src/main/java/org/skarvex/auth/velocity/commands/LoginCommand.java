@@ -4,6 +4,8 @@ import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import org.skarvex.auth.core.service.AuthService;
+import org.skarvex.auth.core.service.LoginTimeoutService;
+import org.skarvex.auth.core.service.TimeService;
 import org.skarvex.auth.velocity.manager.ConfigurationManager;
 import org.skarvex.auth.velocity.utils.Messages;
 
@@ -14,13 +16,15 @@ public class LoginCommand implements SimpleCommand {
     private final ProxyServer server;
     private final ConfigurationManager config;
     private final AuthService authService;
+    private final LoginTimeoutService loginTimeoutService;
 
     public LoginCommand(ProxyServer server,
                         ConfigurationManager config,
-                        AuthService authService) {
+                        AuthService authService, LoginTimeoutService loginTimeoutService) {
         this.server = server;
         this.config = config;
         this.authService = authService;
+        this.loginTimeoutService = loginTimeoutService;
     }
 
     @Override
@@ -28,6 +32,7 @@ public class LoginCommand implements SimpleCommand {
 
         Player player = (Player) invocation.source();
         UUID uuid = player.getUniqueId();
+        String ip = player.getRemoteAddress().getAddress().getHostAddress();
 
         String[] arguments = invocation.arguments();
 
@@ -59,7 +64,7 @@ public class LoginCommand implements SimpleCommand {
             return;
         }
 
-        if (!authService.authenticate(uuid, password)) {
+        if (!authService.authenticate(uuid, password, ip)) {
 
             authService.addAttempt(uuid);
 
@@ -67,11 +72,10 @@ public class LoginCommand implements SimpleCommand {
                 authService.block(uuid);
 
                 long time = authService.getRemainingTime(uuid);
-                String remainingTime = time + " " + (time == 1 ? "minute" : "minutes");
 
                 player.disconnect(Messages.parse(
                         config.getString("messages.login.kick-screen")
-                                .replace("<time>", remainingTime))
+                                .replace("<time>", TimeService.formatDuration(time)))
                 );
                 return;
             }
@@ -83,11 +87,14 @@ public class LoginCommand implements SimpleCommand {
             return;
         }
 
+        authService.authenticate(uuid, password, ip);
+
         player.sendMessage(Messages.parse(
                 config.getString("messages.login.success"))
         );
 
         authService.resetAttempts(uuid);
+        loginTimeoutService.cancel(uuid);
 
         server.getServer("lobby").ifPresent(lobby ->
                 player.createConnectionRequest(lobby).fireAndForget());

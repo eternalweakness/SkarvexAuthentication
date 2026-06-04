@@ -3,7 +3,6 @@ package org.skarvex.auth.velocity.commands;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.kyori.adventure.text.Component;
 import org.skarvex.auth.core.service.AuthService;
 import org.skarvex.auth.velocity.manager.ConfigurationManager;
 import org.skarvex.auth.velocity.utils.Messages;
@@ -29,6 +28,7 @@ public class RegisterCommand implements SimpleCommand {
 
         Player player = (Player) invocation.source();
         UUID uuid = player.getUniqueId();
+        String playerIp = player.getRemoteAddress().getAddress().getHostAddress();
 
         String[] arguments = invocation.arguments();
 
@@ -57,7 +57,7 @@ public class RegisterCommand implements SimpleCommand {
             return;
         }
 
-        if (authService.register(uuid, player.getUsername(), password)) {
+        if (authService.register(uuid, password, playerIp, playerIp, true)) {
             player.sendMessage(Messages.parse(
                     config.getString("messages.register.success"))
             );
@@ -65,9 +65,6 @@ public class RegisterCommand implements SimpleCommand {
             server.getServer("lobby").ifPresent(lobby ->
                     player.createConnectionRequest(lobby).fireAndForget());
 
-            return;
-        };
-
-
+        }
     }
 }

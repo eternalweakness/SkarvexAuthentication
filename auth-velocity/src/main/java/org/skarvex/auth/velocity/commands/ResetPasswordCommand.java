@@ -70,7 +70,7 @@ public class ResetPasswordCommand implements SimpleCommand {
         }
 
         if (authService.updatePassword(uuid, newPassword)) {
-            authService.logout(uuid);
+            authService.revokeSession(uuid);
 
             player.disconnect(Messages.parse(
                     config.getString("messages.changepass.kick-screen"))

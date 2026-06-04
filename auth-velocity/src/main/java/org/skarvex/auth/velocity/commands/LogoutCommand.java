@@ -53,7 +53,7 @@ public class LogoutCommand implements SimpleCommand {
             return;
         }
 
-        authService.logout(uuid);
+        authService.revokeSession(uuid);
 
         player.disconnect(Messages.parse(
                     config.getString("messages.logout.kick-screen"))

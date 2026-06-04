@@ -15,7 +15,6 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.2")
     implementation("com.mysql:mysql-connector-j:9.3.0")
     implementation("com.zaxxer:HikariCP:6.3.0")
-    implementation("org.apache.commons:commons-text:1.13.0")
 }
 
 java {
@@ -25,6 +24,7 @@ java {
 tasks {
     shadowJar {
         archiveClassifier.set("")
+        mergeServiceFiles()
     }
 
     build {

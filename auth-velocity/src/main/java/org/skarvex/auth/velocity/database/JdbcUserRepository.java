@@ -36,8 +36,10 @@ public class JdbcUserRepository
             return Optional.of(
                     new User(
                             UUID.fromString(resultSet.getString("uuid")),
-                            resultSet.getString("name"),
-                            resultSet.getString("password_hash")
+                            resultSet.getString("password_hash"),
+                            resultSet.getString("registration_ip"),
+                            resultSet.getString("last_login_ip"),
+                            resultSet.getBoolean("remember_session")
                     )
             );
 
@@ -48,14 +50,16 @@ public class JdbcUserRepository
 
     @Override
     public void save(User user) {
-        String sql = "INSERT INTO users(uuid, name, password_hash) VALUES(?,?,?)";
+        String sql = "INSERT INTO users(uuid, password_hash, registration_ip, last_login_ip, remember_session) VALUES(?,?,?,?,?)";
 
         try (Connection connection = db.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             statement.setString(1, user.id().toString());
-            statement.setString(2, user.name());
-            statement.setString(3, user.passwordHash());
+            statement.setString(2, user.passwordHash());
+            statement.setString(3, user.registrationIp());
+            statement.setString(4, user.lastLoginIp());
+            statement.setBoolean(5, user.autoLogin());
 
             statement.executeUpdate();
 
@@ -79,4 +83,40 @@ public class JdbcUserRepository
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public boolean updateLastLoginIp(UUID uuid, String ip) {
+
+        String sql = "UPDATE users SET last_login_ip = ? WHERE uuid = ?";
+
+        try (Connection connection = db.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, ip);
+            statement.setString(2, uuid.toString());
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setAutoLogin(UUID uuid, boolean rememberSession) {
+
+        String sql = "UPDATE users SET remember_session = ? WHERE uuid = ?";
+
+        try (Connection connection = db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setBoolean(1, rememberSession);
+            statement.setString(2, uuid.toString());
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
