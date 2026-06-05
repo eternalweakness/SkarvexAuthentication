@@ -1,6 +1,6 @@
 # SkarvexAuthentication 
 
-Skarvex is a lightweight authentication system for Minecraft netowkrs running on Velocity and Paper.
+Skarvex is a lightweight authentication system for Minecraft networks running on Velocity and Paper.
 
 The project is split into multiple modules, such as:
 - **auth-core** - contains shared business logic and interfaces
