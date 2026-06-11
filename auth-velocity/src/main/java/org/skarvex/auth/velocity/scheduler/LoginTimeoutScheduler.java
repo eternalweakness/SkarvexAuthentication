@@ -21,7 +21,7 @@ public class LoginTimeoutScheduler {
     private final LoginTimeoutService loginTimeoutService;
     private final ConfigurationManager config;
 
-    private Map<UUID, ScheduledTask> reminderTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, ScheduledTask> reminderTasks = new ConcurrentHashMap<>();
 
     public LoginTimeoutScheduler(AuthVelocity plugin,
                                  ProxyServer proxy,
@@ -36,6 +36,7 @@ public class LoginTimeoutScheduler {
     }
 
     public void startTimeout(UUID uuid) {
+
         removeTask(uuid);
 
         ScheduledTask task = proxy.getScheduler().buildTask(plugin, () -> {
@@ -55,9 +56,9 @@ public class LoginTimeoutScheduler {
                 player.disconnect(Messages.parse(
                         config.getString("messages.timeout")
                 ));
+                removeTask(uuid);
             }
 
-            removeTask(uuid);
         }).repeat(Duration.ofSeconds(1)).schedule();
 
         reminderTasks.put(uuid, task);

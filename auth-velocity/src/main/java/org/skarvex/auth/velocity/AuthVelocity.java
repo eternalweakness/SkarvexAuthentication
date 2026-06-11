@@ -66,9 +66,9 @@ public class AuthVelocity {
     @Subscribe
     public void onConnect(ServerPreConnectEvent event) {
 
-        Player player = event.getPlayer();
+        Player customer = event.getPlayer();
 
-        if (authService.isAuthenticated(player.getUniqueId())) {
+        if (authService.isAuthenticated(customer.getUniqueId())) {
             return;
         }
 
@@ -89,12 +89,11 @@ public class AuthVelocity {
     @Subscribe
     public void onJoin(PlayerChooseInitialServerEvent event) {
 
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        String incomingIp = player.getRemoteAddress().getAddress().getHostAddress();
+        Player customer = event.getPlayer();
+        UUID uuid = customer.getUniqueId();
+        String incomingIp = customer.getRemoteAddress().getAddress().getHostAddress();
 
-        boolean autoLogin =
-                authService.tryAutoLogin(uuid, incomingIp);
+        boolean autoLogin = authService.tryAutoLogin(uuid, incomingIp);
 
         if (autoLogin) {
             proxy.getServer("lobby").ifPresent(event::setInitialServer);
@@ -103,7 +102,7 @@ public class AuthVelocity {
 
         if (authService.isBlocked(uuid)) {
             long time = authService.getRemainingTime(uuid);
-            event.getPlayer().disconnect(
+            customer.disconnect(
                     Messages.parse(config.getString("messages.login.kick-screen")
                             .replace("<time>", TimeService.formatDuration(time))
                     )
@@ -111,14 +110,11 @@ public class AuthVelocity {
             return;
         }
 
-        loginTimeoutService.start(
-                uuid,
-                Duration.ofSeconds(
-                        config.getInt("login.timeout")
-                )
-        );
+        // Running the timeout service (default = 60 seconds)
+        loginTimeoutService.start(uuid, Duration.ofSeconds(config.getInt("login.timeout")));
+        timeoutScheduler.startTimeout(uuid);
 
-        if (authService.isAuthenticated(player.getUniqueId())) {
+        if (authService.isAuthenticated(uuid)) {
             return;
         }
 
@@ -141,9 +137,13 @@ public class AuthVelocity {
     public void onDisconnect(
             DisconnectEvent event
     ) {
-        authService.logout(
-                event.getPlayer().getUniqueId()
-        );
+        Player customer = event.getPlayer();
+        UUID uuid = customer.getUniqueId();
+
+        authService.logout(uuid);
+
+        loginTimeoutService.cancel(uuid);
+        timeoutScheduler.removeTask(uuid);
     }
 
     private void loadConfiguration() {

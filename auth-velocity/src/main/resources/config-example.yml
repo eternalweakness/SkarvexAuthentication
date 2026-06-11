@@ -5,6 +5,7 @@ database:
 
 login:
   attempts: 5
+  timeout: 60
 
 messages:
   already-registered: "<white>You are already registered!"
@@ -13,6 +14,7 @@ messages:
   not-logged: "<white>You are not logged in yet. Please use <dark_purple>/login [password]</dark_purple>"
   insufficient-characters: "<white>Please use a minimum of <dark_purple>4 characters</dark_purple>"
   wrong-credentials: "<white>You entered the wrong password. Please try again!"
+  timeout: "<red>Authentication timed out. Please try again.</red>"
 
   register:
     usage: "<dark_purple><bold>AUTH</bold></dark_purple> <dark_gray><bold>:: </bold></dark_gray> <white>Register - <dark_purple>/register [password]</dark_purple>"
@@ -21,6 +23,11 @@ messages:
   login:
     usage: "<dark_purple><bold>AUTH</bold></dark_purple> <dark_gray><bold>:: </bold></dark_gray> <white>Login - <dark_purple>/login [password]</dark_purple>"
     success: "<green>You have successfully logged in!"
+    kick-screen: "
+    <red>Access denied.</red>
+    \n<red>Too many failed login attempts.</red>
+    \n\n<red>Please try again in <time>.</red>
+    "
 
   logout:
     usage: "<dark_purple><bold>AUTH</bold></dark_purple> <dark_gray><bold>:: </bold></dark_gray> <white>Logout - <dark_purple>/logout</dark_purple>"
