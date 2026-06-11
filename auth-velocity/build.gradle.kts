@@ -23,6 +23,8 @@ java {
 
 tasks {
     shadowJar {
+        archiveBaseName.set("SkarvexAuth-Proxy")
+        archiveVersion.set(project.version.toString())
         archiveClassifier.set("")
         mergeServiceFiles()
     }

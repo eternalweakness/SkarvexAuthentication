@@ -19,6 +19,8 @@ java {
 }
 
 tasks.shadowJar {
+    archiveBaseName.set("SkarvexAuth-Paper")
+    archiveVersion.set(project.version.toString())
     archiveClassifier.set("")
 }
 
