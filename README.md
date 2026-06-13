@@ -14,7 +14,8 @@ The project is split into multiple modules, such as:
 - BCrypt password hashing
 - Session management (/logout)
 - Auto-login based on trusted IP
-- Login timeout protection with brute-force implementation
+- Login timeout protection
+- IP-based brute-force protection with Caffeine Caching to reduce database load
 - Password change support (/changepass)
 - MySQL storage and HikariCP as a connection pooling
 
@@ -58,6 +59,7 @@ auth-core
 ├─ services 
 ├─ repositories 
 ├─ security 
+├─ utils
 └─ models 
 
 auth-velocity 
@@ -69,7 +71,7 @@ auth-velocity
 auth-paper 
 ├─ listeners 
 ├─ managers 
-└─ gameplay restrictions
+└─ services (gameplay restrictions)
 ```
 
 ## Commands
@@ -80,8 +82,8 @@ auth-paper
 - **/changepass [old] [new]** - Change the password
 
 ## Security
-- Login attempts are limited and can be configured in config.yml.
-- Temporary account blocking after too many failed attempts (300 seconds/5 minutes default).
+[//]: # (- OUT OF ORDER!!!!! Login attempts are limited and can be configured in config.yml. )
+- Temporary IP blocking after too many failed attempts (600 seconds/10 minutes default).
 - Sessions are stored in memory and cleared on disconnect.
 - Passwords are hashed using BCrypt.
 
