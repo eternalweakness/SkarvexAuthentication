@@ -4,11 +4,13 @@ import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import org.skarvex.auth.core.service.AuthService;
+import org.skarvex.auth.core.service.BruteForceService;
 import org.skarvex.auth.core.service.LoginTimeoutService;
-import org.skarvex.auth.core.service.TimeService;
+import org.skarvex.auth.core.util.TimeUtil;
 import org.skarvex.auth.velocity.manager.ConfigurationManager;
 import org.skarvex.auth.velocity.utils.Messages;
 
+import java.time.Duration;
 import java.util.UUID;
 
 public class LoginCommand implements SimpleCommand {
@@ -16,14 +18,18 @@ public class LoginCommand implements SimpleCommand {
     private final ProxyServer server;
     private final ConfigurationManager config;
     private final AuthService authService;
+    private final BruteForceService bruteForceService;
     private final LoginTimeoutService loginTimeoutService;
 
     public LoginCommand(ProxyServer server,
                         ConfigurationManager config,
-                        AuthService authService, LoginTimeoutService loginTimeoutService) {
+                        AuthService authService,
+                        BruteForceService bruteForceService,
+                        LoginTimeoutService loginTimeoutService) {
         this.server = server;
         this.config = config;
         this.authService = authService;
+        this.bruteForceService = bruteForceService;
         this.loginTimeoutService = loginTimeoutService;
     }
 
@@ -66,18 +72,18 @@ public class LoginCommand implements SimpleCommand {
 
         if (!authService.authenticate(uuid, password, ip)) {
 
-            authService.addAttempt(uuid);
+            int attempts = bruteForceService.increment(ip);
 
-            if (authService.getAttempts(uuid) >= authService.getMaxAttempts()) {
-                authService.block(uuid);
+            if (attempts >= bruteForceService.getMaxAttempts()) {
+                bruteForceService.block(ip).thenRun(() -> {
 
-                long time = authService.getRemainingTime(uuid);
-
-                player.disconnect(Messages.parse(
-                        config.getString("messages.login.kick-screen")
-                                .replace("<time>", TimeService.formatDuration(time)))
-                );
-                return;
+                    Duration time = bruteForceService.getRemainingTime(ip);
+                    player.disconnect(
+                            Messages.parse(config.getString("messages.login.kick-screen")
+                                    .replace("<time>", TimeUtil.formatDuration(time))
+                            )
+                    );
+                });
             }
 
             player.sendMessage(Messages.parse(
@@ -88,13 +94,11 @@ public class LoginCommand implements SimpleCommand {
         }
 
         authService.authenticate(uuid, password, ip);
+        bruteForceService.reset(ip);
 
         player.sendMessage(Messages.parse(
                 config.getString("messages.login.success"))
         );
-
-        authService.resetAttempts(uuid);
-        loginTimeoutService.cancel(uuid);
 
         server.getServer("lobby").ifPresent(lobby ->
                 player.createConnectionRequest(lobby).fireAndForget());

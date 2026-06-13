@@ -10,18 +10,21 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import org.skarvex.auth.core.repository.RestrictedIpRepository;
 import org.skarvex.auth.core.repository.UserRepository;
 import org.skarvex.auth.core.security.BCryptPasswordHasher;
 import org.skarvex.auth.core.security.PasswordHasher;
 import org.skarvex.auth.core.service.AuthService;
+import org.skarvex.auth.core.service.BruteForceService;
 import org.skarvex.auth.core.service.LoginTimeoutService;
 import org.skarvex.auth.core.service.SessionService;
-import org.skarvex.auth.core.service.TimeService;
+import org.skarvex.auth.core.util.TimeUtil;
 import org.skarvex.auth.velocity.commands.LoginCommand;
 import org.skarvex.auth.velocity.commands.LogoutCommand;
 import org.skarvex.auth.velocity.commands.RegisterCommand;
 import org.skarvex.auth.velocity.commands.ResetPasswordCommand;
 import org.skarvex.auth.velocity.database.DatabaseManager;
+import org.skarvex.auth.velocity.database.JdbcRestrictedIpRepository;
 import org.skarvex.auth.velocity.database.JdbcUserRepository;
 import org.skarvex.auth.velocity.manager.ConfigurationManager;
 import org.skarvex.auth.velocity.scheduler.LoginReminderScheduler;
@@ -47,9 +50,12 @@ public class AuthVelocity {
     private SessionService sessions;
     private PasswordHasher hasher;
     private UserRepository users;
+    private RestrictedIpRepository restrictedIps;
     private DatabaseManager database;
     private AuthService authService;
+
     private LoginTimeoutService loginTimeoutService;
+    private BruteForceService bruteForceService;
 
     private LoginTimeoutScheduler timeoutScheduler;
     private LoginReminderScheduler reminderScheduler;
@@ -100,15 +106,16 @@ public class AuthVelocity {
             return;
         }
 
-        if (authService.isBlocked(uuid)) {
-            long time = authService.getRemainingTime(uuid);
+        bruteForceService.isBlocked(incomingIp).thenAccept(isBlocked -> {
+            if (!isBlocked) return;
+
+            Duration time = bruteForceService.getRemainingTime(incomingIp);
             customer.disconnect(
                     Messages.parse(config.getString("messages.login.kick-screen")
-                            .replace("<time>", TimeService.formatDuration(time))
+                            .replace("<time>", TimeUtil.formatDuration(time))
                     )
             );
-            return;
-        }
+        });
 
         // Running the timeout service (default = 60 seconds)
         loginTimeoutService.start(uuid, Duration.ofSeconds(config.getInt("login.timeout")));
@@ -164,8 +171,10 @@ public class AuthVelocity {
         this.sessions = new SessionService();
         this.hasher = new BCryptPasswordHasher();
         this.users = new JdbcUserRepository(database);
+        this.restrictedIps = new JdbcRestrictedIpRepository(database);
         this.loginTimeoutService = new LoginTimeoutService();
         this.authService = new AuthService(users, hasher, sessions);
+        this.bruteForceService = new BruteForceService(restrictedIps);
     }
 
     private void registerCommands() {
@@ -190,6 +199,7 @@ public class AuthVelocity {
                         proxy,
                         config,
                         authService,
+                        bruteForceService,
                         loginTimeoutService
                 )
         );

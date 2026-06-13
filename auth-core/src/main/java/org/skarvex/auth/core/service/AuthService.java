@@ -4,22 +4,13 @@ import org.skarvex.auth.core.model.User;
 import org.skarvex.auth.core.repository.UserRepository;
 import org.skarvex.auth.core.security.PasswordHasher;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthService {
 
     private final UserRepository users;
     private final PasswordHasher hasher;
     private final SessionService sessions;
-
-    private final Map<UUID, Integer> attempts = new ConcurrentHashMap<>();
-    private final Map<UUID, Instant> blockedUsers = new ConcurrentHashMap<>();
-
-    private final int maxAttempts = 5;
 
     public AuthService(
             UserRepository users,
@@ -55,7 +46,6 @@ public class AuthService {
                         hasher.verify(password, user.passwordHash())
         ).map(user -> {
             sessions.login(uuid);
-            resetAttempts(uuid);
 
             users.setAutoLogin(uuid, true);
             users.updateLastLoginIp(uuid, incomingIp);
@@ -67,6 +57,10 @@ public class AuthService {
         sessions.logout(uuid);
     }
 
+    /**
+     * Cancels the user's active session using the logout() method, and also disables automatic session for a specific UUID.
+     * @param uuid Server user UUID
+     */
     public void revokeSession(UUID uuid) {
         sessions.logout(uuid);
         users.setAutoLogin(uuid, false);
@@ -93,50 +87,6 @@ public class AuthService {
         );
     }
 
-    public int getAttempts(UUID uuid) {
-        return attempts.getOrDefault(uuid, 0);
-    }
-    public void addAttempt(UUID uuid) {
-        attempts.merge(uuid, 1, Integer::sum);
-    }
-    public void resetAttempts(UUID uuid) {
-        attempts.remove(uuid);
-    }
-
-    public void block(UUID uuid) {
-        blockedUsers.put(uuid, Instant.now().plus(Duration.ofMinutes(5)));
-    }
-    public boolean isBlocked(UUID uuid) {
-
-        Instant blockedUntil = blockedUsers.get(uuid);
-
-        if (blockedUntil == null) {
-            return false;
-        }
-
-        if (Instant.now().isAfter(blockedUntil)) {
-            blockedUsers.remove(uuid);
-            resetAttempts(uuid);
-            return false;
-        }
-
-        return true;
-    }
-    public long getRemainingTime(UUID uuid) {
-        Instant blockedUntil = blockedUsers.get(uuid);
-
-        if (blockedUntil == null) {
-            return 0;
-        }
-
-        return Math.max(
-                0, Duration.between(
-                        Instant.now(),
-                        blockedUntil
-                ).toSeconds()
-        );
-    }
-
     public boolean tryAutoLogin(UUID uuid, String incomingIp) {
         return users.findById(uuid).filter(User::autoLogin)
                 .filter(user -> {
@@ -149,9 +99,4 @@ public class AuthService {
                     return true;
         }).orElse(false);
     }
-
-    public int getMaxAttempts() {
-        return this.maxAttempts;
-    }
-
 }
